@@ -21,4 +21,12 @@ export default {
   signout() {
     return Repository.get(`${resource}/signout`);
   },
+  updateUser(payload) {
+    return Repository.put(`${resource}/user`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": `${store.state.auth.csrfToken}`,
+      },
+    });
+  },
 };

@@ -22,3 +22,9 @@ type Item struct {
 	W  string `json:"w"`
 	T  string `json:"t"`
 }
+
+type UserForUpdate struct {
+	Uid   string `json:"uid" validate:"min=1,max=128"`
+	Name  string `json:"name" validate:"min=1,max=150"`
+	Email string `json:"email" validate:"min=1,max=256"`
+}

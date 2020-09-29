@@ -12,7 +12,7 @@ Vue.config.errorHandler = function(err, vm, info) { // eslint-disable-line
   if (status >= 400 && status < 500) {
     store.commit("error/set400", status);
   } else if (status >= 500 && status < 600) {
-    store.commit("error/set500");
+    store.commit("error/set500", status);
   }
 };
 
@@ -25,7 +25,7 @@ window.addEventListener("unhandledrejection", (event) => {
   if (status >= 400 && status < 500) {
     store.commit("error/set400", status);
   } else if (status >= 500 && status < 600) {
-    store.commit("error/set500");
+    store.commit("error/set500", status);
   }
 });
 

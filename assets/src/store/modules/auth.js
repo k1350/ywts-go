@@ -31,6 +31,12 @@ const mutations = {
   setCsrfToken(state, payload) {
     state.csrfToken = payload;
   },
+  setName(state, payload) {
+    state.name = payload;
+  },
+  setEmail(state, payload) {
+    state.email = payload;
+  },
 };
 
 export default {

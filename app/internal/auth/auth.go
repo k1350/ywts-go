@@ -22,6 +22,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"google.golang.org/api/option"
 
+	"app/internal/middleware"
+	"app/internal/models"
 	"app/internal/repository"
 	"app/internal/sessionstore"
 )
@@ -54,7 +56,7 @@ func GetCsrfToken() echo.HandlerFunc {
 			return c.String(http.StatusBadRequest, "session error.")
 		}
 		if aSession.Values["csrfToken"] != nil {
-			auth, err := SetupFirebase()
+			client, err := SetupFirebase()
 			if err != nil {
 				log.Print(err)
 				return c.String(http.StatusInternalServerError, err.Error())
@@ -62,14 +64,14 @@ func GetCsrfToken() echo.HandlerFunc {
 
 			// ユーザー情報の取得
 			uid := aSession.Values["uid"].(string)
-			user, err := auth.GetUser(context.Background(), uid)
+			user, err := client.GetUser(context.Background(), uid)
 			if err != nil {
 				log.Print(err)
 				return c.String(http.StatusInternalServerError, err.Error())
 			}
 
 			// ユーザー名を最新に更新
-			err = updateUser(uid, user.UserInfo.DisplayName)
+			err = updateName(uid, user.UserInfo.DisplayName)
 			if err != nil {
 				log.Print(err)
 				return c.String(http.StatusInternalServerError, err.Error())
@@ -216,28 +218,28 @@ func Signin() echo.HandlerFunc {
 			log.Fatal(err)
 		}
 		// Firebase SDK のセットアップ
-		auth, err := SetupFirebase()
+		client, err := SetupFirebase()
 		if err != nil {
 			log.Print(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
 
 		// JWT の検証
-		_, err = auth.VerifyIDToken(context.Background(), idToken)
+		_, err = client.VerifyIDToken(context.Background(), idToken)
 		if err != nil {
 			log.Print(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
 
 		// ユーザー情報の取得
-		user, err := auth.GetUser(context.Background(), u.Uid)
+		user, err := client.GetUser(context.Background(), u.Uid)
 		if err != nil {
 			log.Print(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
 
 		// ユーザー名を最新に更新
-		err = updateUser(u.Uid, user.UserInfo.DisplayName)
+		err = updateName(u.Uid, user.UserInfo.DisplayName)
 		if err != nil {
 			log.Print(err)
 			return c.String(http.StatusInternalServerError, err.Error())
@@ -286,6 +288,70 @@ func Signin() echo.HandlerFunc {
 	}
 }
 
+func UpdateUser() echo.HandlerFunc {
+	return func(c echo.Context) (err error) {
+		isLegitimate := middleware.CheckSession(c)
+		if !isLegitimate {
+			return echo.NewHTTPError(http.StatusBadRequest)
+		}
+
+		uid := c.Get("uid")
+
+		u := new(models.UserForUpdate)
+		if err = c.Bind(u); err != nil {
+			log.Print(err)
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+		if err = c.Validate(u); err != nil {
+			log.Print(err)
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+		// 本人以外は更新できない
+		if uid != u.Uid {
+			return echo.NewHTTPError(http.StatusForbidden)
+		}
+
+		// Firebase SDK のセットアップ
+		client, err := SetupFirebase()
+		if err != nil {
+			log.Print(err)
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
+		// ユーザー情報の取得
+		user, err := client.GetUser(context.Background(), u.Uid)
+
+		// Firebase上の名前と送信されてきた名前が違う場合は更新する
+		if user.UserInfo.DisplayName != u.Name {
+			// Firebase上のユーザー名を更新
+			params := (&auth.UserToUpdate{}).
+				DisplayName(u.Name)
+			_, err := client.UpdateUser(context.Background(), u.Uid, params)
+			if err != nil {
+				log.Print("error updating user name: %v\n", err)
+				return c.String(http.StatusInternalServerError, err.Error())
+			}
+			// ローカルDB上のユーザー名を更新
+			err = updateName(u.Uid, u.Name)
+			if err != nil {
+				log.Print(err)
+				return c.String(http.StatusInternalServerError, err.Error())
+			}
+		}
+		// Firebase上のメールアドレスと送信されてきたメールアドレスが違う場合は更新する
+		if user.UserInfo.Email != u.Email {
+			// Firebase上のメールアドレスを更新
+			params := (&auth.UserToUpdate{}).
+				Email(u.Email)
+			_, err := client.UpdateUser(context.Background(), u.Uid, params)
+			if err != nil {
+				log.Print("error updating user email: %v\n", err)
+				return c.String(http.StatusInternalServerError, err.Error())
+			}
+		}
+		return c.NoContent(http.StatusOK)
+	}
+}
+
 func Signout() echo.HandlerFunc {
 	return func(c echo.Context) (err error) {
 		// セッションを確認してセッションを破棄する
@@ -304,7 +370,7 @@ func Signout() echo.HandlerFunc {
 	}
 }
 
-func updateUser(uid string, name string) error {
+func updateName(uid string, name string) error {
 	err := repository.Db.Connect()
 	if err != nil {
 		return err

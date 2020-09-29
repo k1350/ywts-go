@@ -8,8 +8,9 @@ const state = {
         state.message = "エラーが発生しました。";
         state.status = payload;
     },
-    set500() {
+    set500(state, payload) {
         state.message = "エラーが発生しました。しばらくたってからやり直してください。";
+        state.status = payload;
     },
     remove() {
         state.message = null;

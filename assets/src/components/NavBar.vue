@@ -6,6 +6,11 @@
       </router-link>
     </li>
     <li :class="$style.link_nav" v-if="this.$store.state.auth.signined">
+      <router-link to="/account" exact>
+        アカウント管理
+      </router-link>
+    </li>
+    <li :class="$style.link_nav" v-if="this.$store.state.auth.signined">
       <a href="#" @click="signOut">ログアウト</a>
     </li>
   </ul>
@@ -42,7 +47,7 @@ export default {
 .container {
   display: grid;
   grid-template-rows: 1fr;
-  grid-template-columns: 10rem 10rem 1fr;
+  grid-template-columns: 10rem 15rem 1fr;
   padding: 1rem 0;
 }
 </style>

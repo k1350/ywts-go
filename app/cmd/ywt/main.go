@@ -40,6 +40,7 @@ func main() {
 	e.POST("/v1/auth/token", auth.GetCsrfToken())
 	e.POST("/v1/auth/signin", auth.Signin())
 	e.GET("/v1/auth/signout", auth.Signout())
+	m.PUT("/v1/auth/user", auth.UpdateUser())
 
 	// e.Startの中はdocker-composeのgoコンテナで設定したportsを指定してください。
 	e.Logger.Fatal(e.Start(":8082"))

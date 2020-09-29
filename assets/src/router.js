@@ -8,6 +8,7 @@ import Board from "./components/Board";
 import AddBoard from "./components/AddBoard";
 import EditBoard from "./components/EditBoard";
 import InviteBoard from "./components/InviteBoard";
+import Account from "./components/Account";
 import NotFound from "./components/NotFound";
 import store from "./store/index";
 
@@ -61,6 +62,11 @@ let router = new VueRouter({
       name: "invite",
       component: InviteBoard,
       props: true,
+    },
+    {
+      path: "/account",
+      name: "account",
+      component: Account,
     },
     { path: "*", component: NotFound },
   ],
