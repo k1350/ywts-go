@@ -1,13 +1,13 @@
 # 使い方
-(1) Docker compose と yarn が使用可能な環境を用意する
+**(1) Docker compose と yarn が使用可能な環境を用意する**  
 説明は省略
 
-(2) ソースコードをcloneする
+**(2) ソースコードをcloneする**  
 ```
 git clone https://github.com/k1350/ywts-go.git
 ```
 
-(3) Docker-compose用のenvファイルを作成する。 
+**(3) Docker-compose用のenvファイルを作成する。**  
 プロジェクト直下の .env.sample を .env にリネームする。  
 本件で使うMySQLのルートパスワード、ユーザー名・パスワードを記入する。  
 またNginxのタイムゾーンを変更したい場合は変更する。
@@ -18,7 +18,7 @@ MYSQL_PASSWORD=db_pass
 NGINX_TZ=Asia/Tokyo
 ```
 
-(4) FirebaseUIの使用準備を行う  
+**(4) FirebaseUIの使用準備を行う**  
 Firebaseプロジェクトを新規作成する。  
 次に Authentication を有効にし、Sign-in method で「メール/パスワード」を有効にする。
 
@@ -30,7 +30,7 @@ Firebaseプロジェクトを新規作成する。
 
 同じ設定画面から「全般」を選択し、ページ下部の「マイアプリ」から先ほど作成したウェブ用アプリの Firebase SDK snippet を表示しておく。
 
-(5) バックエンドのenvファイルを作成する  
+**(5) バックエンドのenvファイルを作成する**  
 app/.env.sample を app/.env にリネームする。
 
 MySQLのユーザ名・パスワードは (3) と同じ内容を設定する。  
@@ -38,14 +38,14 @@ FIREBASE_JSON_PATH は、パス末尾のjsonファイル名を (4) で app/priva
 
 SESSION_KEY は適当な推測困難な英数字文字列を記入する。
 
-(6) フロントエンドのenvファイルを作成する  
+**(6) フロントエンドのenvファイルを作成する**  
 assets/.env.sample を app/.env にリネームする。
 
 VUE_APP_API_BASE_URL は、このREADMEにしたがってDockerで動かすなら変更不要。
 
 VUE_APP_FIREBASE_xxx を (4) で開いておいた Firebase SDK snippet の中身で書き換える。（なお本README記載時のFirebaseバージョンは8.1.1なので、今後バージョンアップに伴いsnippetの内容が変更されたら動かない可能性あり）
 
-(7) フロントエンド用の依存パッケージをダウンロードする  
+**(7) フロントエンド用の依存パッケージをダウンロードする**  
 assets 直下で
 
 ```
@@ -63,14 +63,14 @@ yarn install
 
 にすれば事前installは不要になります。
 
-(8) （初回実行時のみ）docker-compose build  
+**(8) （初回実行時のみ）docker-compose build**  
 プロジェクト直下で
 
 ```
 docker-compose build
 ```
 
-(9) 起動する  
+**(9) 起動する**  
 プロジェクト直下で
 
 ```
